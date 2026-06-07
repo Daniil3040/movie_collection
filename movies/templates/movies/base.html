@@ -394,6 +394,24 @@
         .movie-detail-container {
             padding: 0.75rem;
         }
+        /* Дополнительные стили для поиска */
+        @media (max-width: 768px) {
+            .search-form form {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .search-form .form-control,
+            .search-form .btn {
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .search-form {
+                margin-left: auto;
+            }
+        }
 }
     </style>
 </head>
