@@ -1,0 +1,57 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}Избранное{% endblock %}
+
+{% block content %}
+<h1 style="color: white; margin-bottom: 2rem;">❤️ Мои избранные фильмы</h1>
+
+<div class="movie-grid">
+    {% for movie in movies %}
+        <div class="movie-card">
+            <img src="{{ movie.get_poster }}" alt="{{ movie.title }}" class="movie-poster" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+            <div class="movie-info">
+                <div class="movie-title">{{ movie.title }}</div>
+                <div class="movie-rating">⭐ {{ movie.rating }}/10</div>
+                <div class="movie-genres">
+                    {% for genre in movie.genres.all|slice:":2" %}
+                        {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary" style="flex: 1; font-size: 0.9rem;">Подробнее</a>
+                    <form method="POST" action="{% url 'remove_from_favorites' movie.id %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="width: 100%; font-size: 0.9rem;">Удалить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div style="color: white; text-align: center; grid-column: 1/-1; padding: 3rem;">
+            <h3>У вас пока нет избранных фильмов</h3>
+            <p>Добавляйте фильмы в избранное, чтобы не потерять их!</p>
+            <a href="{% url 'movie_list' %}" class="btn btn-primary">К списку фильмов</a>
+        </div>
+    {% endfor %}
+</div>
+
+{% if movies.has_other_pages %}
+    <div class="pagination">
+        {% if movies.has_previous %}
+            <a href="?page={{ movies.previous_page_number }}" class="page-link">←</a>
+        {% endif %}
+
+        {% for num in movies.paginator.page_range %}
+            {% if movies.number == num %}
+                <span class="page-link" style="background: #667eea; color: white;">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if movies.has_next %}
+            <a href="?page={{ movies.next_page_number }}" class="page-link">→</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}Выход из системы{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 3rem auto; background: white; padding: 2rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">🚪</div>
+    <h2 style="margin-bottom: 1rem; color: #333;">Выход из системы</h2>
+    <p style="margin-bottom: 2rem; color: #666;">Вы уверены, что хотите выйти из аккаунта <strong>{{ user.username }}</strong>?</p>
+
+    <form method="POST" style="display: inline-block;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="padding: 0.75rem 2rem; margin-right: 1rem; font-size: 1rem;">
+            ✅ Да, выйти
+        </button>
+        <a href="{% url 'movie_list' %}" class="btn btn-primary" style="padding: 0.75rem 2rem; text-decoration: none; font-size: 1rem;">
+            ❌ Отмена
+        </a>
+    </form>
+</div>
+{% endblock %}

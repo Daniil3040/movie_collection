@@ -1,0 +1,169 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<div style="background: white; border-radius: 10px; padding: 2rem;">
+    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
+        <div>
+            <img src="{{ movie.get_poster }}" alt="{{ movie.title }}" style="width: 100%; border-radius: 10px;" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+        </div>
+        <div>
+            <h1>{{ movie.title }}</h1>
+
+            <!-- Блок рейтинга -->
+            <div style="margin: 1rem 0; padding: 1rem; background: #f7f7f7; border-radius: 10px;">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">
+                    ⭐ <strong>{{ movie.rating }}</strong>/10
+                    <span style="font-size: 0.9rem; color: #666;">
+                        ({{ movie.user_ratings.count }} оценок)
+                    </span>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <div style="margin-top: 1rem;">
+                        <strong>Ваша оценка:</strong>
+                        <form method="POST" style="display: inline-block; margin-left: 0.5rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="rating_submit" value="1">
+                            <select name="score" class="form-control" style="width: auto; display: inline-block; width: 120px;" onchange="this.form.submit()">
+                                <option value="">⭐ Оценить</option>
+                                <option value="10" {% if user_rating == 10 %}selected{% endif %}>10 ★</option>
+                                <option value="9" {% if user_rating == 9 %}selected{% endif %}>9 ★</option>
+                                <option value="8" {% if user_rating == 8 %}selected{% endif %}>8 ★</option>
+                                <option value="7" {% if user_rating == 7 %}selected{% endif %}>7 ★</option>
+                                <option value="6" {% if user_rating == 6 %}selected{% endif %}>6 ★</option>
+                                <option value="5" {% if user_rating == 5 %}selected{% endif %}>5 ★</option>
+                                <option value="4" {% if user_rating == 4 %}selected{% endif %}>4 ★</option>
+                                <option value="3" {% if user_rating == 3 %}selected{% endif %}>3 ★</option>
+                                <option value="2" {% if user_rating == 2 %}selected{% endif %}>2 ★</option>
+                                <option value="1" {% if user_rating == 1 %}selected{% endif %}>1 ★</option>
+                            </select>
+                        </form>
+                        {% if user_rating %}
+                            <span style="margin-left: 0.5rem; color: #667eea;">
+                                Ваша оценка: {{ user_rating }} ★
+                            </span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p style="margin-top: 0.5rem;">
+                        <a href="{% url 'login' %}">Войдите</a> чтобы оценить фильм
+                    </p>
+                {% endif %}
+            </div>
+
+            <div style="margin: 1rem 0;">
+                <div>📅 Год: {{ movie.release_year }}</div>
+                {% if movie.director %}
+                    <div>🎬 Режиссер: {{ movie.director }}</div>
+                {% endif %}
+                <div>🏷️ Жанры:
+                    {% for genre in movie.genres.all %}
+                        {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                <form method="POST" action="
+                    {% if is_favorite %}
+                        {% url 'remove_from_favorites' movie.id %}
+                    {% else %}
+                        {% url 'add_to_favorites' movie.id %}
+                    {% endif %}
+                " style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-primary{% endif %}">
+                        {% if is_favorite %}❤️ В избранном{% else %}🤍 В избранное{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            <div style="margin-top: 2rem;">
+                <h3>Описание</h3>
+                <p>{{ movie.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Комментарии с ответами -->
+    <div style="margin-top: 3rem;">
+        <h3>Комментарии ({{ comments.count }})</h3>
+
+        {% if user.is_authenticated %}
+            <form method="POST" style="margin-bottom: 2rem; padding: 1rem; background: #f9f9f9; border-radius: 10px;">
+                {% csrf_token %}
+                <input type="hidden" name="comment_submit" value="1">
+                <div class="form-group">
+                    {{ comment_form.text }}
+                </div>
+                <button type="submit" class="btn btn-primary">💬 Добавить комментарий</button>
+            </form>
+        {% else %}
+            <p><a href="{% url 'login' %}">Войдите</a> чтобы оставить комментарий</p>
+        {% endif %}
+
+        <div>
+            {% for comment in comments %}
+                <div class="comment" style="background: #f7f7f7; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <div class="comment-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #666;">
+                        <strong>👤 {{ comment.user.username }}</strong>
+                        <span>📅 {{ comment.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <p style="margin-bottom: 0.5rem;">{{ comment.text }}</p>
+
+                    <!-- Кнопка ответа -->
+                    {% if user.is_authenticated %}
+                        <button onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            💬 Ответить
+                        </button>
+                    {% endif %}
+
+                    <!-- Форма ответа (скрыта по умолчанию) -->
+                    <div id="reply-{{ comment.id }}" style="display: none; margin-top: 1rem; margin-left: 2rem;">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="reply_submit" value="1">
+                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                            <div class="form-group">
+                                {{ reply_form.text }}
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="font-size: 0.9rem;">📨 Отправить ответ</button>
+                            <button type="button" onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.9rem;">❌ Отмена</button>
+                        </form>
+                    </div>
+
+                    <!-- Ответы -->
+                    {% if comment.get_replies %}
+                        <div style="margin-top: 1rem; margin-left: 2rem; border-left: 3px solid #667eea; padding-left: 1rem;">
+                            {% for reply in comment.get_replies %}
+                                <div style="background: #e8e8e8; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                                        <strong>↳ 👤 {{ reply.user.username }}</strong>
+                                        <span>📅 {{ reply.created_at|date:"d.m.Y H:i" }}</span>
+                                    </div>
+                                    <p style="margin: 0;">{{ reply.text }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p style="text-align: center; color: #666;">Пока нет комментариев. Будьте первым!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleReplyForm(formId) {
+    const form = document.getElementById(formId);
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
