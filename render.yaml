@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: django-sqlite-app
+    runtime: python
+    repo: https://github.com/ваш-username/ваш-репозиторий
+    plan: free
+    region: frankfurt
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn your_project_name.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: 'False'
+      - key: PYTHON_VERSION
+        value: 3.11.0
