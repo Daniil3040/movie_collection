@@ -61,9 +61,9 @@
 
     <div class="search-wrapper">
         <form method="GET" class="search-form-inline">
-            <input type="text" name="search" class="form-control" placeholder="🔍 Поиск фильмов..." value="{{ search_query }}">
+            <input type="text" name="search" class="form-control" placeholder="Поиск фильмов..." value="{{ search_query }}">
             <select name="genre" class="form-control">
-                <option value="">📋 Все жанры</option>
+                <option value="">Все жанры</option>
                 {% for genre in genres %}
                     <option value="{{ genre.id }}" {% if selected_genre == genre.id|stringformat:"s" %}selected{% endif %}>
                         {{ genre.name }}
