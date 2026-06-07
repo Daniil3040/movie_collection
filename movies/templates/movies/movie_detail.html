@@ -3,30 +3,30 @@
 {% block title %}{{ movie.title }}{% endblock %}
 
 {% block content %}
-<div style="background: white; border-radius: 10px; padding: 2rem;">
-    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
-        <div>
-            <img src="{{ movie.get_poster }}" alt="{{ movie.title }}" style="width: 100%; border-radius: 10px;" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+<div class="movie-detail-container">
+    <div class="movie-detail-layout">
+        <div class="movie-poster-container">
+            <img src="{{ movie.get_poster }}" alt="{{ movie.title }}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
         </div>
-        <div>
-            <h1>{{ movie.title }}</h1>
+        <div class="movie-detail-info">
+            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">{{ movie.title }}</h1>
 
             <!-- Блок рейтинга -->
-            <div style="margin: 1rem 0; padding: 1rem; background: #f7f7f7; border-radius: 10px;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">
+            <div style="margin: 1rem 0; padding: 0.75rem; background: #f7f7f7; border-radius: 10px;">
+                <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">
                     ⭐ <strong>{{ movie.rating }}</strong>/10
-                    <span style="font-size: 0.9rem; color: #666;">
+                    <span style="font-size: 0.8rem; color: #666;">
                         ({{ movie.user_ratings.count }} оценок)
                     </span>
                 </div>
 
                 {% if user.is_authenticated %}
-                    <div style="margin-top: 1rem;">
+                    <div style="margin-top: 0.75rem;">
                         <strong>Ваша оценка:</strong>
                         <form method="POST" style="display: inline-block; margin-left: 0.5rem;">
                             {% csrf_token %}
                             <input type="hidden" name="rating_submit" value="1">
-                            <select name="score" class="form-control" style="width: auto; display: inline-block; width: 120px;" onchange="this.form.submit()">
+                            <select name="score" class="form-control" style="width: auto; display: inline-block; width: 100px;" onchange="this.form.submit()">
                                 <option value="">⭐ Оценить</option>
                                 <option value="10" {% if user_rating == 10 %}selected{% endif %}>10 ★</option>
                                 <option value="9" {% if user_rating == 9 %}selected{% endif %}>9 ★</option>
@@ -40,16 +40,9 @@
                                 <option value="1" {% if user_rating == 1 %}selected{% endif %}>1 ★</option>
                             </select>
                         </form>
-                        {% if user_rating %}
-                            <span style="margin-left: 0.5rem; color: #667eea;">
-                                Ваша оценка: {{ user_rating }} ★
-                            </span>
-                        {% endif %}
                     </div>
                 {% else %}
-                    <p style="margin-top: 0.5rem;">
-                        <a href="{% url 'login' %}">Войдите</a> чтобы оценить фильм
-                    </p>
+                    <p style="margin-top: 0.5rem;"><a href="{% url 'login' %}">Войдите</a> чтобы оценить фильм</p>
                 {% endif %}
             </div>
 
@@ -80,19 +73,19 @@
                 </form>
             {% endif %}
 
-            <div style="margin-top: 2rem;">
+            <div style="margin-top: 1.5rem;">
                 <h3>Описание</h3>
-                <p>{{ movie.description }}</p>
+                <p style="word-wrap: break-word;">{{ movie.description }}</p>
             </div>
         </div>
     </div>
 
-    <!-- Комментарии с ответами -->
-    <div style="margin-top: 3rem;">
+    <!-- Комментарии -->
+    <div style="margin-top: 2rem;">
         <h3>Комментарии ({{ comments.count }})</h3>
 
         {% if user.is_authenticated %}
-            <form method="POST" style="margin-bottom: 2rem; padding: 1rem; background: #f9f9f9; border-radius: 10px;">
+            <form method="POST" style="margin-bottom: 1.5rem; padding: 0.75rem; background: #f9f9f9; border-radius: 10px;">
                 {% csrf_token %}
                 <input type="hidden" name="comment_submit" value="1">
                 <div class="form-group">
@@ -106,22 +99,20 @@
 
         <div>
             {% for comment in comments %}
-                <div class="comment" style="background: #f7f7f7; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                    <div class="comment-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #666;">
+                <div class="comment">
+                    <div class="comment-header">
                         <strong>👤 {{ comment.user.username }}</strong>
                         <span>📅 {{ comment.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
-                    <p style="margin-bottom: 0.5rem;">{{ comment.text }}</p>
+                    <p style="word-wrap: break-word;">{{ comment.text }}</p>
 
-                    <!-- Кнопка ответа -->
                     {% if user.is_authenticated %}
-                        <button onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                        <button onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; margin-top: 0.5rem;">
                             💬 Ответить
                         </button>
                     {% endif %}
 
-                    <!-- Форма ответа (скрыта по умолчанию) -->
-                    <div id="reply-{{ comment.id }}" style="display: none; margin-top: 1rem; margin-left: 2rem;">
+                    <div id="reply-{{ comment.id }}" style="display: none; margin-top: 0.75rem;">
                         <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="reply_submit" value="1">
@@ -129,28 +120,27 @@
                             <div class="form-group">
                                 {{ reply_form.text }}
                             </div>
-                            <button type="submit" class="btn btn-primary" style="font-size: 0.9rem;">📨 Отправить ответ</button>
-                            <button type="button" onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.9rem;">❌ Отмена</button>
+                            <button type="submit" class="btn btn-primary" style="font-size: 0.8rem;">📨 Отправить</button>
+                            <button type="button" onclick="toggleReplyForm('reply-{{ comment.id }}')" class="btn btn-outline" style="font-size: 0.8rem;">❌ Отмена</button>
                         </form>
                     </div>
 
-                    <!-- Ответы -->
                     {% if comment.get_replies %}
-                        <div style="margin-top: 1rem; margin-left: 2rem; border-left: 3px solid #667eea; padding-left: 1rem;">
+                        <div class="replies">
                             {% for reply in comment.get_replies %}
-                                <div style="background: #e8e8e8; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                                <div class="reply">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.75rem;">
                                         <strong>↳ 👤 {{ reply.user.username }}</strong>
                                         <span>📅 {{ reply.created_at|date:"d.m.Y H:i" }}</span>
                                     </div>
-                                    <p style="margin: 0;">{{ reply.text }}</p>
+                                    <p style="margin: 0; word-wrap: break-word;">{{ reply.text }}</p>
                                 </div>
                             {% endfor %}
                         </div>
                     {% endif %}
                 </div>
             {% empty %}
-                <p style="text-align: center; color: #666;">Пока нет комментариев. Будьте первым!</p>
+                <p class="text-center">Пока нет комментариев. Будьте первым!</p>
             {% endfor %}
         </div>
     </div>

@@ -3,13 +3,13 @@
 {% block title %}Список фильмов{% endblock %}
 
 {% block content %}
-<h1 style="color: white; margin-bottom: 2rem;">🎬 Коллекция фильмов</h1>
+<h1 style="color: white; margin-bottom: 1rem; font-size: 1.5rem;">🎬 Коллекция фильмов</h1>
 
 <!-- Поиск и фильтры -->
 <div class="search-form">
-    <form method="GET" style="flex: 1; display: flex; gap: 0.5rem;">
+    <form method="GET" style="width: 100%;">
         <input type="text" name="search" class="form-control" placeholder="Поиск фильмов..." value="{{ search_query }}">
-        <select name="genre" class="form-control" style="width: auto;">
+        <select name="genre" class="form-control">
             <option value="">Все жанры</option>
             {% for genre in genres %}
                 <option value="{{ genre.id }}" {% if selected_genre == genre.id|stringformat:"s" %}selected{% endif %}>
@@ -27,20 +27,18 @@
         <div class="movie-card">
             <img src="{{ movie.get_poster }}" alt="{{ movie.title }}" class="movie-poster" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
             <div class="movie-info">
-                <div class="movie-title">{{ movie.title }}</div>
+                <div class="movie-title" title="{{ movie.title }}">{{ movie.title|truncatechars:25 }}</div>
                 <div class="movie-rating">⭐ {{ movie.rating }}/10</div>
                 <div class="movie-genres">
                     {% for genre in movie.genres.all|slice:":2" %}
                         {{ genre.name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </div>
-                <div style="margin-top: 0.5rem;">
-                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary" style="font-size: 0.9rem;">Подробнее</a>
-                </div>
+                <a href="{% url 'movie_detail' movie.id %}" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.3rem 0.6rem;">Подробнее</a>
             </div>
         </div>
     {% empty %}
-        <div style="color: white; text-align: center; grid-column: 1/-1; padding: 3rem;">
+        <div class="text-center" style="color: white; grid-column: 1/-1; padding: 2rem;">
             <h3>Фильмы не найдены</h3>
             <p>Попробуйте изменить параметры поиска</p>
         </div>
